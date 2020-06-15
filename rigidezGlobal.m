@@ -10,6 +10,7 @@
 
 function [KG,fq]=rigidezGlobal(ELEMENTO,NODO,cargaLocal)
 
+  
   k= @(E,A,L) (E*A/L)*[1 -1;-1 1];
 
   T= @(cos,sin) [cos sin 0 0;0 0 cos sin];
@@ -51,18 +52,26 @@ function [KG,fq]=rigidezGlobal(ELEMENTO,NODO,cargaLocal)
     K=transpose(T(coseno,seno))*k(ELEMENTO(u,3),ELEMENTO(u,4),Largo)*T(coseno,seno); % Matriz local en cuatro grados de libertad
     
     fqGlobal=transpose(T(coseno,seno))*transpose(cargaLocal(find(cargaLocal(:,1)==u),2:3));
-
-    if (isempty(fqGlobal)==1)
-
-      fqGlobal=zeros(2,1);
-
-    endif
     
 
     ################# ENSAMBLADO #####################################
     
     for i=1:4
-      
+
+      if (isempty(fqGlobal)==1)
+
+	try
+
+	  fq(conectividad(i))=fq(conectividad(i))+0;
+	  
+	catch
+
+	  fq(conectividad(i))=0;
+	  
+	end_try_catch
+	
+      else
+	
 	try
 
 	  fq(conectividad(i))=fq(conectividad(i))+fqGlobal(i);
@@ -72,6 +81,9 @@ function [KG,fq]=rigidezGlobal(ELEMENTO,NODO,cargaLocal)
 	  fq(conectividad(i))=fqGlobal(i);
 	  
 	end_try_catch
+
+     endif
+
 
       
       for j=1:4

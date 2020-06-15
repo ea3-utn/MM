@@ -62,8 +62,6 @@ CARGAy=[2 -9000]; % [Nodo Py] define carga en nodo i
 
 GL=size(KG,1); % Cant. de grados de libertad globales
 
-
-
 [P,U]=vectorCargas(GL,CARGAx,CARGAy,CCx,CCy);
 
 				% Guyan
@@ -72,7 +70,9 @@ INDEX=linspace(1,GL,GL);
 
 i=1;guyan=[1 1];
 
-while (isempty(guyan)<1 & i<4)
+CC=sum(isnan(U));
+
+while (isempty(guyan)<1 & i<CC+1)
   
   Null=INDEX(isnan(U));
 
@@ -104,26 +104,26 @@ while (isempty(guyan)<1 & i<4)
     
 endwhile
 
+
 				% RESOLUCION
 
 
-ccT=size(CARGAx,1)+size(CARGAy,1); % Cant. de Condiciones a aplicar
 
-K11=KG(1:ccT,1:ccT);
+K11=KG(1:CC,1:CC);
 
-K12=KG(1:ccT,ccT+1:GL);
+K12=KG(1:CC,CC+1:GL);
 
-K21=KG(ccT+1:GL,1:ccT);
+K21=KG(CC+1:GL,1:CC);
 
-K22=KG(ccT+1:GL,ccT+1:GL);
+K22=KG(CC+1:GL,CC+1:GL);
 
-PII=P(1:ccT,:); % Cargas conocidas
+PII=P(1:CC,:); % Cargas conocidas
 
-Fl=fq(1:ccT,:); % Cargas locales asociadas a P conocidas
+Fl=fq(1:CC,:); % Cargas locales asociadas a P conocidas
 
-Fp=fq(ccT+1:end,:); % Cargas locales NO asociadas a P conocidas
+Fp=fq(CC+1:end,:); % Cargas locales NO asociadas a P conocidas
 
-UI=U(ccT+1:GL,:); % Desplazamientos conocidos
+UI=U(CC+1:GL,:); % Desplazamientos conocidos
 
 determinante=det(K11);
 
@@ -172,7 +172,7 @@ endwhile
 
 [KG,P,U,fq]=condensacionGuyan(KG,P,U,fq,registroGuyan,2,1);
 
-postProcesado(NODO,U,100)
+postProcesado(ELEMENTO,NODO,U,10)
 
 
 				% VERIFICACION
