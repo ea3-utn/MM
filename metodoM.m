@@ -23,34 +23,34 @@ color=["k","r","g","b","m","c","k","r","g","b","m","c"];
 
 ## CARACTERISTICAS DEL MATERIAL
 
-E1=70000;
-E2=200000;
-A1=200;
-h=3000;
-A2=350;
-d1=2700;
-A3=150;
-d2=700;
+L=0.1;
+t=1.27e-3;
+d=10e-3;
+A=2*t*d;
+E=70.36e9;
+Fp=17.22;
+Fl=85.8375;
+F=(Fl/4)*cos(pi*45/180);
 
 ## CARACTERISTICAS FISICO-GEOMETRICAS
 
-NODO=[0 h;d1 h;d2 0]; % [Xi Yi] en fila i define nodo i
+NODO=[0 0;0 L;L L;L 0]; % [Xi Yi] en fila i define nodo i
 
-ELEMENTO=[1 2 E1 A1;2 3 E2 A2;3 1 E1 A3]; % [NodoInicial NodoFinal E A] en fila i define ubicacion de la barra i y sus propiedades 
+ELEMENTO=[1 2 E A;2 3 E A;4 3 E A;1 4 E A]; % [NodoInicial NodoFinal E A] en fila i define ubicacion de la barra i y sus propiedades 
 
 ## CARGAS ---> L O C A L E S
 
-cargaLocal=[1 -135+80500 -135-80500;2 168000 -168000;3 36225 -36225]; # Nelemento Ni Nf
+cargaLocal=[1 F/2 F/2;2 -F/2 -F/2;3 F/2 F/2;4 -F/2 -F/2]; # Nelemento Ni Nf
 
 ## CONDICIONES DE CONTORNO Y CARGAS ---> G L O B A L E S
 
-CCx=[1 0]; % [Nodo Ux] define condicion de contorno en nodo i
+CCx=[3 0;4 0]; % [Nodo Ux] define condicion de contorno en nodo i
 
-CCy=[1 0;3 0]; % [Nodo Uy] define condicion de contorno en nodo i 
+CCy=[1 0;4 0]; % [Nodo Uy] define condicion de contorno en nodo i 
 
-CARGAx=[2 7000;3 0]; % [Nodo Px] define carga en nodo i
+CARGAx=[2 0;1 0]; % [Nodo Px] define carga en nodo i
 
-CARGAy=[2 -9000]; % [Nodo Py] define carga en nodo i
+CARGAy=[2 -Fp/2;3 -Fp/2]; % [Nodo Py] define carga en nodo i
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -64,6 +64,7 @@ GL=size(KG,1); % Cant. de grados de libertad globales
 
 [P,U]=vectorCargas(GL,CARGAx,CARGAy,CCx,CCy);
 
+
 				% Guyan
 
 INDEX=linspace(1,GL,GL);
@@ -72,7 +73,8 @@ i=1;guyan=[1 1];
 
 CC=sum(isnan(U));
 
-while (isempty(guyan)<1 & i<CC+1)
+				#while (isempty(guyan)<1 && i<CC+1)
+while (i<CC+1)
   
   Null=INDEX(isnan(U));
 
@@ -93,15 +95,11 @@ while (isempty(guyan)<1 & i<CC+1)
     end_try_catch
 
     [KG,P,U,fq]=condensacionGuyan(KG,P,U,fq,guyan,1,2);
-
-    i++;
-    
-  else
-
-    guyan=[];
-    
+        
   endif
-    
+
+  i++;
+  
 endwhile
 
 
@@ -172,7 +170,7 @@ endwhile
 
 [KG,P,U,fq]=condensacionGuyan(KG,P,U,fq,registroGuyan,2,1);
 
-postProcesado(ELEMENTO,NODO,U,10)
+postProcesado(ELEMENTO,NODO,U,10000)
 
 
 				% VERIFICACION
@@ -180,3 +178,5 @@ postProcesado(ELEMENTO,NODO,U,10)
 FX=sum(P(1:2:end))-sum(fq(1:2:end)) % sumatoria en X
 
 FY=sum(P(2:2:end))-sum(fq(2:2:end)) % sumatoria en Y
+
+keyboard
